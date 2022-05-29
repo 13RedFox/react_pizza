@@ -1,4 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCategoryId } from '../redux/slices/filterSlice';
 import { SearchContext } from '../App';
 
 import Sort from '../components/Sort';
@@ -8,21 +10,24 @@ import Pagination from '../components/Pagination';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 
 const Home = () => {
+  const dispatch = useDispatch();
+  const categoryId = useSelector((state) => state.filterSlice.categoryId);
+  const sortType = useSelector((state) => state.filterSlice.sort.sortProperty);
+
   const { searchValue } = useContext(SearchContext);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [categoryId, setCategoryId] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortType, setSortType] = useState({
-    name: 'популярности',
-    sortProperty: 'rating',
-  });
+
+  const onChangeCategory = (id) => {
+    dispatch(setCategoryId(id));
+  };
 
   useEffect(() => {
     setIsLoading(true);
 
-    const sortBy = sortType.sortProperty.replace('-', '');
-    const order = sortType.sortProperty.includes('-') ? 'asc' : 'desc';
+    const sortBy = sortType.replace('-', '');
+    const order = sortType.includes('-') ? 'asc' : 'desc';
     const category = categoryId > 0 ? `category=${categoryId}` : '';
 
     fetch(
@@ -49,8 +54,8 @@ const Home = () => {
   return (
     <div className="container">
       <div className="content__top">
-        <Categories value={categoryId} onChangeCategory={(id) => setCategoryId(id)} />
-        <Sort value={sortType} onChangeSort={(id) => setSortType(id)} />
+        <Categories value={categoryId} onChangeCategory={onChangeCategory} />
+        <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
       <div className="content__items">{isLoading ? skeletons : pizzas}</div>
